@@ -191,24 +191,41 @@ namespace Tangzx.ABSystem
         }
 
         /// <summary>
-        /// 用默认优先级为0的值加载
+        /// 同步加载
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public AssetBundle Load(string path)
+        {
+#if _AB_MODE_
+            AssetBundleData data = _depInfoReader.GetAssetBundleInfo(HashUtil.Get(path.ToLower()) + ".ab");
+            string sourceFile = pathResolver.GetBundleSourceFile(data.fullName, false);
+            var ab = AssetBundle.LoadFromFile(sourceFile);
+            return ab;
+#else
+            return null;       
+#endif
+        }
+
+        /// <summary>
+        /// 用默认优先级为0的值异步加载
         /// </summary>
         /// <param name="path">路径</param>
         /// <param name="handler">回调</param>
         /// <returns></returns>
-        public AssetBundleLoader Load(string path, LoadAssetCompleteHandler handler = null)
+        public AssetBundleLoader LoadAsync(string path, LoadAssetCompleteHandler handler = null)
         {
-            return Load(path, 0, handler);
+            return LoadAsync(path, 0, handler);
         }
 
         /// <summary>
-        /// 通过一个路径加载ab
+        /// 通过一个路径异步加载ab
         /// </summary>
         /// <param name="path">路径</param>
         /// <param name="prority">优先级</param>
         /// <param name="handler">回调</param>
         /// <returns></returns>
-        public AssetBundleLoader Load(string path, int prority, LoadAssetCompleteHandler handler = null)
+        public AssetBundleLoader LoadAsync(string path, int prority, LoadAssetCompleteHandler handler = null)
         {
 #if _AB_MODE_
             AssetBundleLoader loader = this.CreateLoader(HashUtil.Get(path.ToLower()) + ".ab", path);
