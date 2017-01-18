@@ -39,9 +39,9 @@ namespace Tangzx.ABSystem
         [SerializeField]
         public int refCount { get; private set; }
 
-        private HashSet<AssetBundleInfo> deps = new HashSet<AssetBundleInfo>();
-        private List<string> depChildren = new List<string>();
-        private List<WeakReference> references = new List<WeakReference>();
+        private HashSet<AssetBundleInfo> deps = HashSetPool<AssetBundleInfo>.Get();
+        private List<string> depChildren = ListPool<string>.Get();
+        private List<WeakReference> references = ListPool<WeakReference>.Get();
 
         public AssetBundleInfo()
         {
@@ -162,6 +162,18 @@ namespace Tangzx.ABSystem
             return null;
         }
 
+        public T LoadAsset<T>(Object user, string name) where T : Object
+        {
+            if (bundle)
+            {
+                T asset = bundle.LoadAsset<T>(name);
+                if (asset)
+                    Retain(user);
+                return asset;
+            }
+            return null;
+        }
+
         /// <summary>
         /// 获取此对象
         /// </summary>
@@ -175,8 +187,12 @@ namespace Tangzx.ABSystem
 
         public T Require<T>(Object user) where T : Object
         {
-            this.Retain(user);
-            return LoadAsset<T>();
+            if (mainObject is T)
+            {
+                Retain(user);
+                return (T)mainObject;
+            }
+            return null;
         }
 
         /// <summary>
@@ -224,11 +240,17 @@ namespace Tangzx.ABSystem
             while (e.MoveNext())
             {
                 AssetBundleInfo dep = e.Current;
-                dep.depChildren.Remove(this.bundleName);
+                if (dep.depChildren != null)
+                    dep.depChildren.Remove(this.bundleName);
                 dep.Release();
             }
-            deps.Clear();
-            references.Clear();
+            HashSetPool<AssetBundleInfo>.Release(deps);
+            deps = null;
+            ListPool<string>.Release(depChildren);
+            depChildren = null;
+            ListPool<WeakReference>.Release(references);
+            references = null;
+
             if (onUnloaded != null)
                 onUnloaded(this);
         }
