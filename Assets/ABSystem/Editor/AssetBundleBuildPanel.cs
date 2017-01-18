@@ -107,6 +107,8 @@ namespace Tangzx.ABSystem
             EditorGUI.LabelField(rect, "Asset Filter");
         }
 
+        Vector2 scollbarPos = Vector2.zero;
+
         void OnGUI()
         {
             bool execBuild = false;
@@ -150,6 +152,8 @@ namespace Tangzx.ABSystem
             //context
             GUILayout.BeginVertical();
 
+            scollbarPos = GUILayout.BeginScrollView(scollbarPos, "HiddenScrollbar", "verticalscrollbar");
+
             //format
             GUILayout.BeginHorizontal();
             {
@@ -161,6 +165,8 @@ namespace Tangzx.ABSystem
             GUILayout.Space(10);
             
             _list.DoLayoutList();
+
+            GUILayout.EndScrollView();
             GUILayout.EndVertical();
 
             //set dirty
