@@ -282,23 +282,6 @@ namespace Tangzx.ABSystem
             }
         }
 
-        public T LoadAsset<T>() where T : Object
-        {
-            if (_mainObject == null && _isReady)
-            {
-#if UNITY_5
-                string[] names = bundle.GetAllAssetNames();
-                _mainObject = bundle.LoadAsset<T>(names[0]);
-#else
-                _mainObject = bundle.mainAsset;
-#endif
-                //优化：如果是根，则可以 unload(false) 以节省内存
-                if (data.compositeType == AssetBundleExportType.Root)
-                    UnloadBundle();
-            }
-            return _mainObject as T;
-        }
-
         void UnloadBundle()
         {
             if (bundle != null)
